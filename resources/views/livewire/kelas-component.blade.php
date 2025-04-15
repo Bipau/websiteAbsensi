@@ -1,7 +1,7 @@
 <div>
     <div class="page-header">
         <div class="page-title">
-            <h4>Data Mapel</h4>
+            <h4>Data Kelas</h4>
 
         </div>
         <div class="page-btn">
@@ -45,18 +45,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($kelas ?? [] as $index => $item)
+                        @forelse ($kelas as $index => $item)
                             <tr>
                                 <td>{{ $index + 1 + ($kelas->currentPage() - 1) * $kelas->perPage() }}</td>
                                 <td>{{ $item->nama_kelas }}</td>
                                 <td>{{ $item->tingkat }}</td>
                                 <td>{{ $item->jurusan }}</td>
                                 <td>
-                                   
-                                        {{ $item->waliKelas->nama ?? 'Belum ditetapkan' }}
-                               
-                                        
-                                
+
+                                        {{ $item->waliKelas->user->nama ?? 'Belum ditetapkan' }}
+
+
+
                                 </td>
                                 <td>
                                     <a class="me-3" wire:click='edit({{ $item->id }})' data-bs-target="#editModal"
@@ -88,9 +88,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-
                     @include('Kelas.create')
-
                 </div>
 
             </div>

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Login - WebMngEskul</title>
+    <title>Login - WebAbsensiEskul</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -58,12 +58,11 @@
                     <div class="col-12 col-md-6 text-bg-primary">
                         <div class="d-flex align-items-center justify-content-center h-100">
                             <div class="col-10 col-xl-8 py-3">
-                                <img class="img-fluid rounded mb-4" loading="lazy" src="./assets/img/bsb-logo-light.svg"
-                                    width="245" height="80" alt="BootstrapBrain Logo">
+                                <img class="img-fluid rounded mb-4" loading="lazy" src="assets/img/logo-igsr.png"
+                                    width="80" height="80" alt="BootstrapBrain Logo">
                                 <hr class="border-primary-subtle mb-4">
-                                <h2 class="h1 mb-4">We make digital products that drive you to stand out.</h2>
-                                <p class="lead m-0">We write words, take photos, make videos, and interact with
-                                    artificial intelligence.</p>
+                                <h2 class="h1 mb-4">Selamat Datang di Website Absensi SMK Igasar Pindad</h2>
+                                <p class="lead m-0">Jujur Disiplin Kompeten</p>
                             </div>
                         </div>
                     </div>

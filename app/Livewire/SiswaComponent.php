@@ -26,7 +26,7 @@ class SiswaComponent extends Component
     public function render()
     {
         $siswas = Siswa::with(['user', 'kelas'])
-            ->whereHas('user', function($query) {
+            ->whereHas('user', function ($query) {
                 $query->where('nama', 'like', '%' . $this->search . '%')
                     ->orWhere('email', 'like', '%' . $this->search . '%');
             })
@@ -45,6 +45,7 @@ class SiswaComponent extends Component
         $this->addPage = true;
     }
 
+
     public function store()
     {
         $this->validate([
@@ -55,34 +56,31 @@ class SiswaComponent extends Component
             'nis' => 'required|unique:siswa',
             'JK' => 'required|in:L,P',
             'alamat' => 'required',
-            'tingkat_kelas' => 'required',
-            'kelas_id' => 'required'
+            'kelas_id' => 'required|exists:kelas,id',
         ]);
 
         $user = User::create([
             'nama' => $this->nama,
             'email' => $this->email,
-            'password' => Hash::make($this->password),
+            'password' => bcrypt($this->password),
             'nomor' => $this->nomor,
-            'role' => 'siswa'
+            'role' => 'siswa',
         ]);
-
-        // $user->assignRole('siswa');
 
         Siswa::create([
             'user_id' => $user->id,
             'nis' => $this->nis,
             'JK' => $this->JK,
             'alamat' => $this->alamat,
-            'tingkat_kelas' => $this->tingkat_kelas,
-            'kelas_id' => $this->kelas_id
+            'kelas_id' => $this->kelas_id,
         ]);
 
         $this->resetInput();
-        $this->addPage = false;
         $this->dispatch('close-modal');
-        $this->dispatch('success', ['message' => 'Siswa berhasil ditambahkan']);
+        session()->flash('success', 'Data siswa berhasil ditambahkan.');
     }
+
+
 
     public function edit($id)
     {
@@ -100,6 +98,7 @@ class SiswaComponent extends Component
         $this->kelas_id = $siswa->kelas_id;
     }
 
+
     public function update()
     {
         $this->validate([
@@ -109,34 +108,29 @@ class SiswaComponent extends Component
             'nis' => 'required|unique:siswa,nis,' . $this->siswa_id,
             'JK' => 'required|in:L,P',
             'alamat' => 'required',
-            'tingkat_kelas' => 'required',
-            'kelas_id' => 'required'
+            'kelas_id' => 'required|exists:kelas,id',
         ]);
 
-        $user = User::find($this->user_id);
+        $user = User::findOrFail($this->user_id);
         $user->update([
             'nama' => $this->nama,
             'email' => $this->email,
-            'nomor' => $this->nomor
+            'nomor' => $this->nomor,
         ]);
 
-        if($this->password) {
-            $user->update(['password' => Hash::make($this->password)]);
-        }
-
-        $siswa = Siswa::find($this->siswa_id);
+        $siswa = Siswa::findOrFail($this->siswa_id);
         $siswa->update([
             'nis' => $this->nis,
             'JK' => $this->JK,
             'alamat' => $this->alamat,
-            'tingkat_kelas' => $this->tingkat_kelas,
-            'kelas_id' => $this->kelas_id
+            'kelas_id' => $this->kelas_id,
         ]);
 
         $this->resetInput();
         $this->editPage = false;
+
+        session()->flash('success', 'Data siswa berhasil diperbarui.');
         $this->dispatch('close-modal');
-        $this->dispatch('success', ['message' => 'Siswa berhasil diupdate']);
     }
 
     public function deleteConfirmation($id)

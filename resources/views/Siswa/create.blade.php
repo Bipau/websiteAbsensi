@@ -1,4 +1,4 @@
-<form wire:submit="store">
+<form wire:submit.prevent="store">
     <div class="form-group">
         <label>NISN</label>
         <input type="text" class="form-control" wire:model="nis">
@@ -37,20 +37,6 @@
         <label>Alamat</label>
         <textarea class="form-control" wire:model="alamat"></textarea>
         @error('alamat') <span class="text-danger">{{ $message }}</span> @enderror
-    </div>
-    <div class="form-group">
-        <label>Tingkat Kelas</label>
-        <div>
-            <input type="radio" wire:model="tingkat_kelas" value="X" id="x">
-            <label for="x">X</label>
-
-            <input type="radio" wire:model="tingkat_kelas" value="XI" id="xi">
-            <label for="xi">XI</label>
-
-            <input type="radio" wire:model="tingkat_kelas" value="XII" id="xii">
-            <label for="xii">XII</label>
-        </div>
-        @error('tingkat_kelas') <span class="text-danger">{{ $message }}</span> @enderror
     </div>
     <div class="form-group">
         <label>Kelas</label>

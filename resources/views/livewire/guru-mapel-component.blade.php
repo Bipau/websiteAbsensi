@@ -1,7 +1,7 @@
 <div>
     <div class="page-header">
         <div class="page-title">
-            <h4>Data Users</h4>
+            <h4>Data Mapel</h4>
 
         </div>
         <div class="page-btn">
@@ -20,9 +20,6 @@
                         <input type="text" class="form-control" wire:model.live.debounce.300ms="search"
                             placeholder="Type here...">
                     </div>
-                    <div class="search-input">
-                        <a class="btn btn-searchset"><img src="assets/img/icons/search-white.svg" alt="img"></a>
-                    </div>
                 </div>
                 <div class="wordset">
                     <ul>
@@ -33,38 +30,28 @@
                     </ul>
                 </div>
             </div>
-
             <div class="table-responsive">
-                <table class="table">
+                <table class="table" id="tableMapel">
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>NIS</th>
-                            <th>Nama</th>
-                            <th>Email</th>
-                            <th>JK</th>
-                            <th>Kelas</th>
+                            <th>Nama Karyawan</th>
+                            <th>Mata Pelajaran</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($siswas as $key => $siswa)
+                        @foreach ($guruMapel as $key => $item)
                             <tr>
-                                <td>{{ $siswas->firstItem() + $key }}</td>
-                                <td>{{ $siswa->nis }}</td>
-                                <td>{{ $siswa->user->nama }}</td>
-                                <td>{{ $siswa->user->email }}</td>
-                                <td>{{ $siswa->JK }}</td>
-                                <td>{{ $siswa->kelas->nama_kelas }}</td>
-
+                                <td>{{ $guruMapel->firstItem() + $key }}</td>
+                                <td>{{ $item->karyawan->user->nama ?? '-' }}</td>
+                                <td>{{ $item->mapel->nama_mapel ?? '-' }}</td>
                                 <td>
-                                    <a class="me-3" wire:click='edit({{ $siswa->id }})' data-bs-target="#editModal"
+                                    <a class="me-3" wire:click='edit({{ $item->id }})' data-bs-target="#editModal"
                                         data-bs-toggle="modal">
                                         <img src="assets/img/icons/edit.svg" alt="img">
                                     </a>
-
-                                    <a class="me-3" wire:click="deleteConfirmation({{ $siswa->id }})"
-                                        onclick="confirmDelete({{ $siswa->id }})">
+                                    <a class="me-3" wire:click="deleteConfirmation({{ $item->id }})">
                                         <img src="assets/img/icons/delete.svg" alt="img">
                                     </a>
                                 </td>
@@ -72,10 +59,15 @@
                         @endforeach
                     </tbody>
                 </table>
-                {{ $siswas->links() }}
+                {{ $guruMapel->links() }}
             </div>
+
         </div>
     </div>
+
+
+
+
 
     <!-- Modal tambah data -->
     <div wire:ignore.self class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel"
@@ -87,9 +79,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-
-                        @include('Siswa.create')
-
+                    @include('GuruMapel.create')
                 </div>
 
             </div>
@@ -110,7 +100,7 @@
                 </div>
                 <div class="modal-body">
 
-                        @include('Siswa.edit')
+                    @include('GuruMapel.edit')
 
                 </div>
 
@@ -138,13 +128,12 @@
             });
         });
 
-        // Menutup modal setelah aksi berhasil
         @this.on('close-modal', () => {
             $('#createModal').modal('hide');
             $('#editModal').modal('hide');
-            location.reload();
+            Livewire.dispatch(
+                'refreshTable'); // Gunakan ini untuk memperbarui tabel tanpa refresh halaman
         });
-
         // Menampilkan pesan sukses
         @this.on('success', (event) => {
             Swal.fire({
@@ -185,7 +174,7 @@
         });
 
         // Menampilkan notifikasi setelah delete sukses
-        @this.on('user-deleted', () => {
+        @this.on('mapel-deleted', () => {
             Swal.fire({
                 icon: 'success',
                 title: 'Data berhasil dihapus!',
@@ -196,24 +185,5 @@
             });
             Livewire.emit('refreshTable');
         });
-    });
-
-    $('#createModal, #editModal').on('hidden.bs.modal', function() {
-        Livewire.dispatch('resetForm'); // Panggil metode resetForm di Livewire
-    });
-    Livewire.on('refresh-page', () => {
-        location.reload(); // Refresh halaman secara manual
-    });
-    document.addEventListener('livewire:init', () => {
-        Livewire.on('refreshTable', () => {
-            Livewire.dispatch('$refresh')
-        })
-    })
-
-    window.livewire.on('refreshTable', () => {
-        setTimeout(() => {
-            $('#tableJurusan').DataTable().destroy();
-            $('#tableJurusan').DataTable();
-        }, 300); // Tunggu 300ms untuk memastikan DOM sudah diperbarui
     });
 </script>

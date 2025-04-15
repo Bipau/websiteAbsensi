@@ -32,10 +32,15 @@ class KelasComponent extends Component
 
         $kelasData = $query->paginate(10);
 
-        return view('livewire.kelas-component', ['kelas' => $kelasData,
-            'karyawan' => Karyawan::all()
+        return view('livewire.kelas-component', [
+            'kelas' => $kelasData,
+            'karyawan' => Karyawan::whereHas('user', function ($query) {
+            $query->where('role', 'walikelas');
+            })->get()
         ]);
+        
     }
+    
     public function create()
     {
         $this->resetInput();

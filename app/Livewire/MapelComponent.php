@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithoutUrlPagination;
 use App\Models\Mapel;
+use App\Models\GuruMapel;
 use Livewire\Attributes\On;
 
 class MapelComponent extends Component
@@ -24,11 +25,15 @@ class MapelComponent extends Component
 
         $mapel = Mapel::where('nama_mapel', 'like', '%' . $this->search . '%')
             ->orWhere('kode_mapel', 'like', '%' . $this->search . '%')
-            ->paginate(10); 
+            ->paginate(10);
+
+        $guruMapel = GuruMapel::all();
 
         // Mengirim data ke view
         return view('livewire.mapel-component', [
             'mapel' => $mapel,
+            'guruMapel' => $guruMapel,  
+
         ]);
 
     }

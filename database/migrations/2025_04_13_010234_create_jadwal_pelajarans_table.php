@@ -16,9 +16,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('mapel_id')->constrained('mapel');
             $table->foreignId('karyawan_id')->constrained('karyawan');
-            $table->String('hari');
-            $table->String('jam_mulai');
-            $table->String('jam_selesai');
+            $table->string('hari',10);
+            $table->time('jam_mulai');
+            $table->time('jam_selesai');
             $table->foreignIdFor(Kelas::class);
             $table->timestamps();
         });

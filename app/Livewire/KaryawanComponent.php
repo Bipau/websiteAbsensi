@@ -17,7 +17,7 @@ class KaryawanComponent extends Component
     public $nama, $email, $password, $nomor;
     public $nip, $JK, $alamat, $jabatan,$role;
     public $search = '';
-    public $siswa_id, $user_id, $delete_id;
+    public $karyawan_id, $user_id, $delete_id;
     public $addPage = false;
     public $editPage = false;
 
@@ -52,7 +52,7 @@ class KaryawanComponent extends Component
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
             'nomor' => 'required',
-            'nip' => 'required|unique:siswa',
+            'nip' => 'required|unique:karyawan,nip',
             'JK' => 'required|in:L,P',
             'alamat' => 'required',
             'jabatan' => 'required',
@@ -74,6 +74,7 @@ class KaryawanComponent extends Component
             'nip' => $this->nip,
             'JK' => $this->JK,
             'alamat' => $this->alamat,
+            'nomor' => $this->nomor,
             'jabatan' => $this->jabatan,
 
         ]);
@@ -88,7 +89,7 @@ class KaryawanComponent extends Component
     {
         $this->editPage = true;
         $siswa = Karyawan::with('user')->findOrFail($id);
-        $this->siswa_id = $id;
+        $this->karyawan_id = $id;
         $this->user_id = $siswa->user_id;
         $this->nama = $siswa->user->nama;
         $this->email = $siswa->user->email;
@@ -106,7 +107,7 @@ class KaryawanComponent extends Component
             'nama' => 'required',
             'email' => 'required|email|unique:users,email,' . $this->user_id,
             'nomor' => 'required',
-            'nip' => 'required|unique:siswa,nip,' . $this->siswa_id,
+            'nip' => 'required|unique:karyawan,nip,' . $this->karyawan_id,
             'JK' => 'required|in:L,P',
             'alamat' => 'required',
             'jabatan' => 'required',
@@ -125,11 +126,12 @@ class KaryawanComponent extends Component
             $user->update(['password' => Hash::make($this->password)]);
         }
 
-        $siswa = Karyawan::find($this->siswa_id);
+        $siswa = Karyawan::find($this->karyawan_id);
         $siswa->update([
             'nip' => $this->nip,
             'JK' => $this->JK,
             'alamat' => $this->alamat,
+            'nomor' => $this->nomor,
             'jabatan' => $this->jabatan,
 
         ]);
@@ -170,7 +172,7 @@ class KaryawanComponent extends Component
         $this->JK = '';
         $this->alamat = '';
         $this->jabatan = '';
-        $this->siswa_id = '';
+        $this->karyawan_id = '';
         $this->user_id = '';
         $this->addPage = false; // Nonaktifkan halaman tambah data
         $this->editPage = false; // Nonaktifkan halaman edit data

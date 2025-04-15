@@ -11,14 +11,22 @@ class JadwalPelajaran extends Model
      *
      * @var list<string>
      */
+
+     protected $table ='jadwal_pelajaran';
+
+     
     protected $fillable = [
-        'guru_mapel_id',
+        'karyawan_id',
         'hari',
         'jam_mulai',
         'jam_selesai',
-        'kelas',
+        'kelas_id',
         'mapel_id',
     ];
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
 
     public function guruMapel()
     {

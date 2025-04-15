@@ -24,10 +24,10 @@ Route::middleware(['auth'])->group(function () {
     // Logout route
     Route::post('/logout', [LoginController::class, 'logout'])->name('login.logout');
 
-    // Dashboard route (accessible by all authenticated users)
-    // Route::get('/dashboard', function () {
-    //     return view('dashboard.index');
-    // })->name('dashboard');
+   // Dashboard route (accessible by all authenticated users)
+    Route::get('/dashboard', function () {
+        return view('Dashboard.index');
+    })->name('dashboard');
 
     // Admin only routes
     Route::middleware(['role:superAdmin,admin'])->group(function () {
@@ -47,10 +47,25 @@ Route::middleware(['auth'])->group(function () {
             return view('Mapel.index');
         })->name('mapel');
 
+        Route::get('/guruMapel', function () {
+            return view('GuruMapel.index');
+        })->name('guruMapel');
+
+        Route::get('/jadwal', function () {
+            return view('Jadwal.index');
+        })->name('jadwal');
+
         Route::get('/kelas', function () {
             return view('Kelas.index');
         })->name('kelas');
+        Route::get('/AbsenGerbang', function () {
+            return view('Kelas.index');
+        })->name('AbsenGerbang');
+        Route::get('/AbsenKelas', function () {
+            return view('Kelas.index');
+        })->name('AbsenKelas');
     });
+
 
 
 

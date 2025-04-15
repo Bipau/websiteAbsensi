@@ -30,41 +30,42 @@
                     </ul>
                 </div>
             </div>
-
-
             <div class="table-responsive">
-                <table class="table " id="tableJurusan">
+                <table class="table" id="tableMapel">
                     <thead>
                         <tr>
-
                             <th>Kode Mapel</th>
                             <th>Nama Mapel</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($mapel as $mapel)
+                        @foreach ($mapel as $data)
                             <tr>
-
-                                <td>{{ $mapel->kode_jurusan }}</td>
-                                <td>{{ $mapel->nama_jurusan }}</td>
+                                <td>{{ $data->kode_mapel }}</td>
+                                <td>{{ $data->nama_mapel }}</td>
                                 <td>
-                                    <a class="me-3" wire:click='edit({{ $mapel->id }})' data-bs-target="#editModal"
+                                    <a class="me-3" wire:click='edit({{ $data->id }})' data-bs-target="#editModal"
                                         data-bs-toggle="modal">
                                         <img src="assets/img/icons/edit.svg" alt="img">
                                     </a>
-
-                                    <a class="me-3" wire:click="deleteConfirmation({{ $mapel->id }})"
-                                        onclick="confirmDelete({{ $mapel->id }})">
+                                    <a class="me-3" wire:click="deleteConfirmation({{ $data->id }})">
                                         <img src="assets/img/icons/delete.svg" alt="img">
                                     </a>
                                 </td>
+                            </tr>
                         @endforeach
                     </tbody>
                 </table>
+                {{ $mapel->links() }}
             </div>
+
         </div>
     </div>
+
+
+
+
 
     <!-- Modal tambah data -->
     <div wire:ignore.self class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel"
@@ -76,8 +77,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                   
-                        @include('Mapel.create')
+
+                    @include('Mapel.create')
 
                 </div>
 
@@ -99,7 +100,7 @@
                 </div>
                 <div class="modal-body">
 
-                        @include('Mapel.edit')
+                    @include('Mapel.edit')
 
                 </div>
 
@@ -131,7 +132,7 @@
             $('#createModal').modal('hide');
             $('#editModal').modal('hide');
             Livewire.dispatch(
-            'refreshTable'); // Gunakan ini untuk memperbarui tabel tanpa refresh halaman
+                'refreshTable'); // Gunakan ini untuk memperbarui tabel tanpa refresh halaman
         });
         // Menampilkan pesan sukses
         @this.on('success', (event) => {

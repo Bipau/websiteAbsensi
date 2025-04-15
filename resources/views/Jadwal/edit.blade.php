@@ -1,5 +1,5 @@
-<!-- filepath: resources/views/GuruMapel/create.blade.php -->
-<form wire:submit.prevent="store">
+<!-- filepath: resources/views/Jadwal/edit.blade.php -->
+<form wire:submit.prevent="update">
     <div class="form-group">
         <label for="guru_mapel_id">Guru Mapel</label>
         <select class="form-control" id="guru_mapel_id" wire:model="guru_mapel_id">
@@ -36,7 +36,4 @@
         @error('kelas_id') <span class="text-danger">{{ $message }}</span> @enderror
     </div>
     <button type="submit" class="btn btn-primary">Simpan</button>
-
-
-    <a class="btn btn-secondary" data-bs-dismiss="modal">Batal</a>
 </form>

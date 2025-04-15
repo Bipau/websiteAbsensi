@@ -3,12 +3,12 @@
 @endphp
 <div class="header">
 
-    <div class="header-left active">
-        <a href="index.html" class="logo">
-            <img src="assets/img/logo.png" alt="">
+    <div class="header-left">
+        <a href="" class="logo">
+            <h1>AbseNin</h1>
         </a>
-        <a href="index.html" class="logo-small">
-            <img src="assets/img/logo-small.png" alt="">
+        <a href="" class="logo-small">
+            <h1>Absn</h1>
         </a>
         <a id="toggle_btn" href="javascript:void(0);">
         </a>
