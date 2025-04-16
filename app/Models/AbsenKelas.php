@@ -11,12 +11,13 @@ class AbsenKelas extends Model
      *
      * @var list<string>
      */
+    protected $table = 'absen_kelas';
     protected $fillable = [
         'siswa_id',
-        'jadwal_pelajaran_id',
-        'jam_masuk',
-        'jam_keluar',
+        'jadwal_id',  // Add this
+        'kelas_id',   // Add this
         'tanggal',
+        'jam_absen',
         'status',
     ];
 
@@ -25,8 +26,12 @@ class AbsenKelas extends Model
         return $this->belongsTo(Siswa::class);
     }
 
-    public function jadwalPelajaran()
+    public function jadwal()
     {
         return $this->belongsTo(JadwalPelajaran::class);
+    }
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class);
     }
 }

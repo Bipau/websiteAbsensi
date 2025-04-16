@@ -20,7 +20,6 @@ return new class extends Migration
             $table->date('tanggal');
             $table->time('jam_absen');
             $table->string('token_qr')->nullable(); 
-            $table->text('foto')->nullable();
             $table->enum('status', ['Hadir', 'Izin', 'Sakit', 'Alfa'])->default('Hadir');
 
             $table->timestamps();

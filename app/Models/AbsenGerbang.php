@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class AbsenGerbang extends Model
 {
 
+    protected $table = 'absen_gerbang';
+
     protected $fillable = [
         'user_id',
+        'foto',
         'jam_masuk',
         'jam_keluar',
         'tanggal',

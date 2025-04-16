@@ -5,7 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 
 Route::get('/', function () {
-    return view('index');
+    return view('login.index');
 })->name('home');
 
 Route::get('/error', function () {
@@ -30,7 +30,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 
     // Admin only routes
-    Route::middleware(['role:superAdmin,admin'])->group(function () {
+    Route::middleware(['role:superAdmin,admin,guru,kurikulum,waliKelas'])->group(function () {
         Route::get('/users', function () {
             return view('users.index');
         })->name('users');
@@ -58,16 +58,31 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/kelas', function () {
             return view('Kelas.index');
         })->name('kelas');
-        Route::get('/AbsenGerbang', function () {
-            return view('Kelas.index');
-        })->name('AbsenGerbang');
+
+        Route::get('/AbsenKelasSiswa', function () {
+            return view('KelolaAbsenKelas.index');
+        })->name('AbsenKelasSiswa');
+
+        Route::get('/generateQr', function () {
+            return view('GenerateQr.index');
+        })->name('generateQr');
+
+        Route::get('/kelolaAbsenGerbang', function () {
+            return view('KelolaAbsenGerbang.index');
+        })->name('kelolaAbsenGerbang');
+
         Route::get('/AbsenKelas', function () {
-            return view('Kelas.index');
+            return view('Absen.index');
         })->name('AbsenKelas');
     });
 
 
+    Route::get('/siswa-absen-kelas', function () {
+        return view('SiswaAbsenKelas.index');
+    })->name('siswa-absen-kelas');
 
-
+    Route::get('/AbsenGerbang', function () {
+        return view('AbsenGerbang.index');
+    })->name('AbsenGerbang');
 
 });

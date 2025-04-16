@@ -25,6 +25,12 @@
     <link rel="stylesheet" href="{{ asset('assets/plugins/fontawesome/css/all.min.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+
+    <!-- tambahkan di <head> layout utama -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+
     <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
@@ -55,7 +61,7 @@
         @include('layouts.main-content')
 
         {{-- /mainContent --}}
-
+        <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
         <script src="{{ asset('assets/js/jquery-3.6.0.min.js') }}"></script>
 
         <script src="{{ asset('assets/js/feather.min.js') }}"></script>
