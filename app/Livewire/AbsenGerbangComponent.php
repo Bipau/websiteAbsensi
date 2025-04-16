@@ -74,18 +74,7 @@ class AbsenGerbangComponent extends Component
     public function setLocation($location)
     {
         $this->latitude = $location['lat'];
-        $this->longitude = $location['lng'];<div class="mb-3">
-        <label for="jurusan" class="form-label">Jurusan</label>
-        <select class="form-control" id="jurusan" wire:model="jurusan">
-            <option value="">Pilih Jurusan</option>
-            <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
-            <option value="Teknik Komputer Jaringan">Teknik Komputer Jaringan</option>
-            <option value="Teknik Kendaraan Ringan">Teknik Kendaraan Ringan</option>
-            <option value="Teknik Permesinan">Teknik Permesinan</option>
-            <option value="Teknik Sepede Motor">Teknik Sepede Motor</option>
-        </select>
-        @error('jurusan') <span class="text-danger">{{ $message }}</span> @enderror
-    </div>
+        $this->longitude = $location['lng'];
     }
 
 
@@ -96,62 +85,7 @@ class AbsenGerbangComponent extends Component
         try {
             // Extract the base64 data
             $base64Image = explode(',', $foto)[1];
-            $decodedImage = base64_decode($base64Image);<div class="mb-3"><div class="mb-3">
-            <label for="jurusan" class="form-label">Jurusan</label><div class="mb-3"><div <div class="mb-3">
-            <label for="jurusan" class="form-label">Jurusan</label>
-            <select class="form-control" id="jurusan" wire:model="jurusan">
-                <option value="">Pilih Jurusan</option>
-                <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
-                <option value="Teknik Komputer Jaringan">Teknik Komputer Jaringan</option>
-                <option value="Teknik Kendaraan Ringan">Teknik Kendaraan Ringan</option>
-                <option value="Teknik Permesinan">Teknik Permesinan</option>
-                <option value="Teknik Sepede Motor">Teknik Sepede Motor</option>
-            </select>
-            @error('jurusan') <span class="text-danger">{{ $message }}</span> @enderror
-        </div>class="mb-3">
-            <label for="jurusan" class="form-label">Jurusan</label>
-            <select class="form-control" id="jurusan" wire:model="jurusan">
-                <option value="">Pilih Jurusan</option>
-                <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
-                <option value="Teknik Komputer Jaringan">Teknik Komputer Jaringan</option>
-                <option value="Teknik Kendaraan Ringan">Teknik Kendaraan Ringan</option>
-                <option value="Teknik Permesinan">Teknik Permesinan</option>
-                <option value="Teknik Sepede Motor">Teknik Sepede Motor</option>
-            </select>
-            @error('jurusan') <span class="text-danger">{{ $message }}</span> @enderror
-        </div>
-            <label for="jurusan" class="form-label">Jurusan</label>
-            <select class="form-control" id="jurusan" wire:model="jurusan">
-                <option value="">Pilih Jurusan</option>
-                <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
-                <option value="Teknik Komputer Jaringan">Teknik Komputer Jaringan</option>
-                <option value="Teknik Kendaraan Ringan">Teknik Kendaraan Ringan</option>
-                <option value="Teknik Permesinan">Teknik Permesinan</option>
-                <option value="Teknik Sepede Motor">Teknik Sepede Motor</option>
-            </select>
-            @error('jurusan') <span class="text-danger">{{ $message }}</span> @enderror
-        </div>
-            <select class="form-control" id="jurusan" wire:model="jurusan">
-                <option value="">Pilih Jurusan</option>
-                <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
-                <option value="Teknik Komputer Jaringan">Teknik Komputer Jaringan</option>
-                <option value="Teknik Kendaraan Ringan">Teknik Kendaraan Ringan</option>
-                <option value="Teknik Permesinan">Teknik Permesinan</option>
-                <option value="Teknik Sepede Motor">Teknik Sepede Motor</option>
-            </select>
-            @error('jurusan') <span class="text-danger">{{ $message }}</span> @enderror
-        </div>
-            <label for="jurusan" class="form-label">Jurusan</label>
-            <select class="form-control" id="jurusan" wire:model="jurusan">
-                <option value="">Pilih Jurusan</option>
-                <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
-                <option value="Teknik Komputer Jaringan">Teknik Komputer Jaringan</option>
-                <option value="Teknik Kendaraan Ringan">Teknik Kendaraan Ringan</option>
-                <option value="Teknik Permesinan">Teknik Permesinan</option>
-                <option value="Teknik Sepede Motor">Teknik Sepede Motor</option>
-            </select>
-            @error('jurusan') <span class="text-danger">{{ $message }}</span> @enderror
-        </div>
+            $decodedImage = base64_decode($base64Image);
             
             $filename = 'absensi-' . time() . '.jpg';
             $path = 'absen-gerbang/' . $filename;
