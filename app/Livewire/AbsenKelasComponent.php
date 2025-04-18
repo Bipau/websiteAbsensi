@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\AbsenKelas;
 use App\Models\Kelas;
+use App\Models\User;
 use Carbon\Carbon;
 use Livewire\WithPagination;
 use App\Exports\AbsenKelasExport;
@@ -20,6 +21,7 @@ class AbsenKelasComponent extends Component
     use WithPagination;
 
     public $kelasId;
+    public $SiswaList;
     public $filter = 'harian';
     public $tanggalAwal;
     public $tanggalAkhir;
@@ -38,15 +40,17 @@ class AbsenKelasComponent extends Component
         $this->tanggalAwal = now()->format('Y-m-d');
         $this->tanggalAkhir = now()->format('Y-m-d');
         $this->kelasList = Kelas::all();
+        $this->SiswaList = User::where('role', 'siswa')->get();
     }
 
     public function getAbsenDataProperty()
     {
-        $query = AbsenKelas::with(['siswa.user', 'kelas', 'jadwal.mapel'])
+        $query = AbsenKelas::with(['user', 'kelas', 'jadwal.mapel'])
             ->when($this->kelasId, function ($q) {
                 return $q->where('kelas_id', $this->kelasId);
             });
 
+        // Apply filters
         switch ($this->filter) {
             case 'harian':
                 $query->whereDate('tanggal', Carbon::today());
@@ -88,10 +92,33 @@ class AbsenKelasComponent extends Component
                 break;
         }
 
-        return $query->latest('tanggal')->paginate($this->perPage);
+        $records = $query->get();
+
+        // Group by student
+        $groupedData = $records->groupBy('siswa_id')->map(function($group) {
+            $firstRecord = $group->first();
+            return [
+                'nis' => $firstRecord->user->siswa->nis ?? '-',
+                'nama' => $firstRecord->user->nama,
+                'kelas' => $firstRecord->kelas->nama_kelas ?? '-',
+                'attendance' => $group->groupBy(function($item) {
+                    return $item->tanggal->format('Y-m-d');
+                })->map(function($dayGroup) {
+                    return [
+                        'status' => $dayGroup->map(function($record) {
+                            return [
+                                'status' => $record->status,
+                                'jam_absen' => $record->jam_absen->format('H:i'),
+                                'mapel' => $record->jadwal->mapel->nama_mapel ?? '-'
+                            ];
+                        })->toArray()
+                    ];
+                })
+            ];
+        })->values();
+
+        return $groupedData;
     }
-
-
 
     public function exportPDF()
     {
@@ -99,11 +126,14 @@ class AbsenKelasComponent extends Component
             'absen' => $this->absenData,
             'tanggal' => now()->format('d F Y'),
             'filter' => $this->filter,
+            'dates' => collect($this->absenData)->flatMap(function($student) {
+                return array_keys($student['attendance']->toArray());
+            })->unique()->sort()->values()->toArray(),
             'kelas' => $this->kelasId ? Kelas::find($this->kelasId)->nama_kelas : 'Semua Kelas'
         ];
 
-        $pdf = PDF::loadView('exports.absen-kelas-pdf', $data);
-        return response()->streamDownload(function () use ($pdf) {
+        $pdf = PDF::loadView('exports.absen-kelas-pdf', $data)->setPaper('a4', 'landscape');
+        return response()->streamDownload(function() use ($pdf) {
             echo $pdf->output();
         }, 'absensi-kelas-' . now()->format('Y-m-d') . '.pdf');
     }
@@ -113,38 +143,64 @@ class AbsenKelasComponent extends Component
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Header
-        $sheet->setCellValue('A1', 'Tanggal');
-        $sheet->setCellValue('B1', 'Nama Siswa');
-        $sheet->setCellValue('C1', 'Kelas');
-        $sheet->setCellValue('D1', 'Mapel');
-        $sheet->setCellValue('E1', 'Status');
+        // Get unique dates
+        $dates = collect($this->absenData)->flatMap(function($student) {
+            return array_keys($student['attendance']->toArray());
+        })->unique()->sort()->values()->toArray();
+
+        // Headers
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'NIS');
+        $sheet->setCellValue('C1', 'Nama Siswa');
+        $sheet->setCellValue('D1', 'Kelas');
+
+        $column = 'E';
+        foreach($dates as $date) {
+            $sheet->setCellValue($column.'1', Carbon::parse($date)->format('d/m/Y'));
+            $column++;
+        }
 
         // Data
         $row = 2;
-        foreach ($this->absenData->items() as $data) {
-            $sheet->setCellValue('A' . $row, \Carbon\Carbon::parse($data->tanggal)->format('Y-m-d'));
-            $sheet->setCellValue('B' . $row, $data->siswa->user->nama ?? '-');
-            $sheet->setCellValue('C' . $row, $data->kelas->nama_kelas ?? '-');
-            $sheet->setCellValue('D' . $row, $data->jadwal->mapel->nama_mapel ?? '-');
-            $sheet->setCellValue('E' . $row, $data->status);
+        foreach($this->absenData as $index => $student) {
+            $sheet->setCellValue('A'.$row, $index + 1);
+            $sheet->setCellValue('B'.$row, $student['nis']);
+            $sheet->setCellValue('C'.$row, $student['nama']);
+            $sheet->setCellValue('D'.$row, $student['kelas']);
+
+            $column = 'E';
+            foreach($dates as $date) {
+                if(isset($student['attendance'][$date])) {
+                    $statuses = $student['attendance'][$date]->pluck('status')->join(', ');
+                    $sheet->setCellValue($column.$row, $statuses);
+                } else {
+                    $sheet->setCellValue($column.$row, '-');
+                }
+                $column++;
+            }
             $row++;
         }
-        
 
-        // Simpan sementara ke file
-        $fileName = 'absensi-kelas-' . now()->format('Y-m-d') . '.xlsx';
-        $tempFile = tempnam(sys_get_temp_dir(), $fileName);
+        // Auto-size columns
+        foreach(range('A', $column) as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
         $writer = new Xlsx($spreadsheet);
-        $writer->save($tempFile);
+        $fileName = 'absensi-kelas-' . now()->format('Y-m-d') . '.xlsx';
 
-        // Download response
-        return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
+
     public function render()
     {
         return view('livewire.absen-kelas-component', [
             'absen' => $this->absenData
         ]);
+
     }
 }

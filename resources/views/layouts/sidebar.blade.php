@@ -37,7 +37,7 @@
                 @endif
 
                 {{-- Mapel, Guru Mapel, Jadwal - ADMIN SAJA --}}
-                @if (auth()->user()->role === 'admin')
+                @if (auth()->user()->role === ['admin','kesiswaan'])
                 <li class="submenu">
                     <a href="javascript:void(0);">
                         <img src="assets/img/icons/users1.svg" alt="img">
@@ -53,7 +53,7 @@
                 @endif
 
                 {{-- Absensi --}}
-                @if (in_array(auth()->user()->role, ['admin', 'guru', 'karyawan']))
+                @if (in_array(auth()->user()->role, ['admin', 'guru', 'karyawan','kurikulum','walikelas']))
                 <li class="submenu">
                     <a href="javascript:void(0);">
                         <img src="assets/img/icons/users1.svg" alt="img">

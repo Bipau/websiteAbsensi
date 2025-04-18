@@ -1,13 +1,10 @@
 <div>
     <h4>Scan QR Code untuk Absen</h4>
-
     <div id="reader" style="width: 300px; margin-bottom: 1rem;"></div>
-
     <hr>
-
     <h5>Atau Masukkan Token QR Secara Manual</h5>
     <form wire:submit.prevent="prosesAbsenManual">
-        <input type="text" wire:model="manualToken" class="form-control mb-2" placeholder="Masukkan Token QR">
+        <input type="text" wire:model="manualToken" id="manualTokenInput" class="form-control mb-2" placeholder="Masukkan Token QR">
         <button type="submit" class="btn btn-primary">Absen Manual</button>
     </form>
 
@@ -25,7 +22,16 @@
         function onScanSuccess(decodedText, decodedResult) {
             if (!scanned) {
                 scanned = true;
-                @this.call('prosesAbsen', decodedText);
+
+                // Isi input dengan hasil scan
+                const input = document.getElementById('manualTokenInput');
+                input.value = decodedText;
+
+                // Update Livewire model
+                @this.set('manualToken', decodedText);
+
+                // Submit otomatis
+                @this.call('prosesAbsenManual');
             }
         }
 

@@ -29,7 +29,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title mb-4">Form Absensi</h5>
-                    
+
                     <form wire:submit.prevent="absenMasuk" class="needs-validation" novalidate>
                         <!-- Camera Section -->
                         <div class="mb-4">
@@ -38,14 +38,14 @@
                                 <div class="position-relative mb-3">
                                     @if($foto)
                                         @if(is_string($foto))
-                                            <img src="{{ Storage::url($foto) }}" class="img-fluid rounded" 
+                                            <img src="{{ Storage::url($foto) }}" class="img-fluid rounded"
                                                 style="max-width: 320px; max-height: 240px;">
                                         @else
-                                            <img src="{{ $foto->temporaryUrl() }}" class="img-fluid rounded" 
+                                            <img src="{{ $foto->temporaryUrl() }}" class="img-fluid rounded"
                                                 style="max-width: 320px; max-height: 240px;">
                                         @endif
                                     @else
-                                        <div id="camera-preview" class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                        <div id="camera-preview" class="bg-light rounded d-flex align-items-center justify-content-center"
                                             style="width: 320px; height: 240px;">
                                             <video id="video" width="320" height="240" autoplay playsinline style="display: none;"></video>
                                             <canvas id="canvas" width="320" height="240" style="display: none;"></canvas>
@@ -53,7 +53,7 @@
                                         </div>
                                     @endif
                                 </div>
-                                
+
                                 <div class="d-flex gap-2">
                                     <button type="button" class="btn btn-primary" id="startCamera">
                                         <i class="fas fa-video me-2"></i>Buka Kamera
@@ -67,8 +67,8 @@
                                         </button>
                                     @endif
                                 </div>
-                                
-                                @error('foto') 
+
+                                @error('foto')
                                     <small class="text-danger mt-2">{{ $message }}</small>
                                 @enderror
                             </div>
@@ -81,7 +81,7 @@
                                 <button type="button" class="btn btn-info" wire:click="getLocation">
                                     <i class="fas fa-map-marker-alt me-2"></i>Ambil Lokasi
                                 </button>
-                                
+
                                 @if($latitude && $longitude)
                                     <div class="alert alert-success mb-0">
                                         <i class="fas fa-check-circle me-2"></i>Lokasi berhasil diambil
@@ -90,7 +90,7 @@
                                         </div>
                                     </div>
                                 @endif
-                                
+
                                 <input type="hidden" wire:model="latitude">
                                 <input type="hidden" wire:model="longitude">
                             </div>
@@ -107,8 +107,8 @@
                                     Memproses...
                                 </span>
                             </button>
-                            
-                            <button type="button" wire:click="absenKeluar" class="btn btn-danger" 
+
+                            <button type="button" wire:click="absenKeluar" class="btn btn-danger"
                                 wire:loading.attr="disabled">
                                 <span wire:loading.remove wire:target="absenKeluar">
                                     <i class="fas fa-sign-out-alt me-2"></i>Absen Keluar
@@ -129,7 +129,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title mb-4">Status Absensi</h5>
-                    
+
                     <div class="text-center">
                         <div class="mb-4">
                             <h3 id="current-time" class="display-6 fw-bold text-primary"></h3>
@@ -165,7 +165,7 @@
     let video = null;
     let canvas = null;
     let stream = null;
-    
+
     document.getElementById('startCamera').addEventListener('click', async function() {
         try {
             video = document.getElementById('video');
@@ -174,21 +174,21 @@
             const startButton = document.getElementById('startCamera');
             const takePhotoButton = document.getElementById('takePhoto');
             const iconPlaceholder = preview.querySelector('i');
-    
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { 
+
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
                     facingMode: 'user',
                     width: { ideal: 320 },
                     height: { ideal: 240 }
-                } 
+                }
             });
-    
+
             video.srcObject = stream;
             video.style.display = 'block';
             iconPlaceholder.style.display = 'none';
             startButton.style.display = 'none';
             takePhotoButton.style.display = 'block';
-    
+
         } catch (err) {
             Swal.fire({
                 icon: 'error',
@@ -198,22 +198,22 @@
             console.error('Error:', err);
         }
     });
-    
+
     document.getElementById('takePhoto').addEventListener('click', function() {
         if (video && canvas) {
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
+
             canvas.toBlob(function(blob) {
                 const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
-                
+
                 // Create a DataTransfer object and add the file
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
-                
+
                 // Dispatch to Livewire
                 Livewire.dispatch('foto-captured', { foto: canvas.toDataURL('image/jpeg') });
-                
+
                 // Stop camera
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
@@ -224,11 +224,58 @@
             }, 'image/jpeg');
         }
     });
-    
+
     // Cleanup on page unload
     window.addEventListener('beforeunload', function() {
         if (stream) {
             stream.getTracks().forEach(track => track.stop());
         }
     });
+    document.addEventListener('livewire:initialized', () => {
+    @this.on('getLocation', () => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // Update the dispatch to send individual parameters
+                    Livewire.dispatch('setLocation', {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    });
+                },
+                function(error) {
+                    let errorMessage = 'Gagal mendapatkan lokasi: ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += "Izin akses lokasi ditolak.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += "Informasi lokasi tidak tersedia.";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += "Waktu permintaan lokasi habis.";
+                            break;
+                        default:
+                            errorMessage += "Terjadi kesalahan.";
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: errorMessage
+                    });
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Browser Anda tidak mendukung geolokasi.'
+            });
+        }
+    });
+});
     </script>

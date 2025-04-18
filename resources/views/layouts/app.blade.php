@@ -3,12 +3,20 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="POS - Bootstrap Admin Template">
     <meta name="keywords"
         content="admin, estimates, bootstrap, business, corporate, creative, management, minimal, modern,  html5, responsive">
     <meta name="author" content="Dreamguys - Bootstrap Admin Template">
     <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
+
+    <!-- Add this in your layout's head section -->
+    <meta http-equiv="Content-Security-Policy" content="geolocation 'self'">
     <title>AbseNin</title>
 
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/img/logo-igsr.jpg') }}">
@@ -26,13 +34,16 @@
 
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
+
+
     <!-- tambahkan di <head> layout utama -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     @livewireStyles
 </head>
@@ -68,21 +79,23 @@
 
         <script src="{{ asset('assets/js/jquery.slimscroll.min.js') }}"></script>
 
-        <script src="{{  asset('assets/js/jquery.dataTables.min.js') }}"></script>
-        <script src="{{  asset('assets/js/dataTables.bootstrap4.min.js') }}"></script>
+        <script src="{{ asset('assets/js/jquery.dataTables.min.js') }}"></script>
+        <script src="{{ asset('assets/js/dataTables.bootstrap4.min.js') }}"></script>
 
-        <script src="{{  asset('assets/plugins/select2/js/select2.min.js') }}"></script>
+        <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 
-        <script src="{{  asset('assets/plugins/sweetalert/sweetalert2.all.min.js') }}"></script>
-        <script src="{{  asset('assets/plugins/sweetalert/sweetalerts.min.js') }}"></script>
+        <script src="{{ asset('assets/plugins/sweetalert/sweetalert2.all.min.js') }}"></script>
+        <script src="{{ asset('assets/plugins/sweetalert/sweetalerts.min.js') }}"></script>
 
         <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 
         <script src="{{ asset('assets/js/script.js') }}"></script>
 
         <!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+        <script src="https://unpkg.com/html5-qrcode"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         @livewireScripts
 
 

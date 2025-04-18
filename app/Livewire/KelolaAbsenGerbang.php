@@ -7,6 +7,8 @@ use App\Models\AbsenGerbang;
 use Carbon\Carbon;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -55,9 +57,50 @@ class KelolaAbsenGerbang extends Component
         $this->resetPage();
     }
 
+    public function exportPDF()
+    {
+        try {
+            $data = [
+                'absen' => $this->dataAbsen,
+                'tanggal' => now()->translatedFormat('d F Y'),
+                'filter' => $this->filter,
+                'dates' => collect($this->dataAbsen)->flatMap(function($user) {
+                    return array_keys($user['attendance']->toArray());
+                })->unique()->sort()->values()->toArray()
+            ];
+
+            $pdf = PDF::loadView('exports.absen-gerbang-pdf', $data)
+                ->setPaper('a4', 'landscape')
+                ->setOptions([
+                    'isHtml5ParserEnabled' => true,
+                    'isPhpEnabled' => true,
+                    'isRemoteEnabled' => true,
+                    'isFontSubsettingEnabled' => true,
+                    'defaultFont' => 'sans-serif',
+                    'chroot' => public_path() // Add this line
+                ]);
+
+            return response()->streamDownload(
+                function() use ($pdf) {
+                    echo $pdf->output();
+                },
+                'absensi-gerbang-' . now()->format('Y-m-d') . '.pdf'
+            );
+
+        } catch (\Exception $e) {
+            // Log error
+            Log::error('PDF Export Error: ' . $e->getMessage());
+            
+            // Show error message to user
+            session()->flash('error', 'Gagal mengekspor PDF: ' . $e->getMessage());
+            
+            return null;
+        }
+    }
+
     public function getDataAbsenProperty()
     {
-        $query = AbsenGerbang::with(['user', 'user.siswa'])
+        $query = AbsenGerbang::with(['user', 'user.siswa', 'user.karyawan'])
             ->when($this->search, function ($q) {
                 $q->whereHas('user', function ($query) {
                     $query->where('nama', 'like', '%' . $this->search . '%')
@@ -72,6 +115,7 @@ class KelolaAbsenGerbang extends Component
                 });
             });
 
+        // Apply date filters
         switch ($this->filter) {
             case 'harian':
                 $query->whereDate('tanggal', Carbon::today());
@@ -113,7 +157,32 @@ class KelolaAbsenGerbang extends Component
                 break;
         }
 
-        return $query->latest('tanggal')->paginate($this->perPage);
+        // Get all records
+        $records = $query->get();
+
+        // Group by user
+        $groupedData = $records->groupBy('user_id')->map(function ($group) {
+            $firstRecord = $group->first();
+            return [
+                'user_id' => $firstRecord->user_id,
+                'nama' => $firstRecord->user->nama,
+                'role' => $firstRecord->user->role,
+                'identifier' => $firstRecord->user->role === 'siswa' ?
+                    ($firstRecord->user->siswa->nis ?? '-') : ($firstRecord->user->karyawan->nip ?? '-'),
+                'attendance' => $group->groupBy(function ($item) {
+                    return Carbon::parse($item->tanggal)->format('Y-m-d');
+                })->map(function ($dayGroup) {
+                    return [
+                        'jam_masuk' => $dayGroup->first()->jam_masuk,
+                        'jam_keluar' => $dayGroup->first()->jam_keluar,
+                        'status' => $dayGroup->first()->status,
+                        'foto' => $dayGroup->first()->foto
+                    ];
+                })
+            ];
+        })->values();
+
+        return $groupedData;
     }
 
     public function render()
@@ -128,56 +197,67 @@ class KelolaAbsenGerbang extends Component
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Header
+        // Get unique dates
+        $dates = collect($this->dataAbsen)->flatMap(function($user) {
+            return array_keys($user['attendance']->toArray());
+        })->unique()->sort()->values()->toArray();
+
+        // Headers
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'Tanggal');
-        $sheet->setCellValue('C1', 'Role');
-        $sheet->setCellValue('D1', 'NIS/NIP');
-        $sheet->setCellValue('E1', 'Nama');
-        $sheet->setCellValue('F1', 'Jam Masuk');
-        $sheet->setCellValue('G1', 'Status');
-        $sheet->setCellValue('H1', 'Jam Keluar');
+        $sheet->setCellValue('B1', 'Role');
+        $sheet->setCellValue('C1', 'NIS/NIP');
+        $sheet->setCellValue('D1', 'Nama');
+
+        $column = 'E';
+        foreach($dates as $date) {
+            $sheet->setCellValue($column.'1', Carbon::parse($date)->format('d/m/Y'));
+            $column++;
+        }
 
         // Data
         $row = 2;
-        foreach ($this->dataAbsen as $index => $data) {
-            $sheet->setCellValue('A' . $row, $index + 1);
-            $sheet->setCellValue('B' . $row, Carbon::parse($data->tanggal)->format('d/m/Y'));
-            $sheet->setCellValue('C' . $row, ucfirst($data->user->role));
-            $sheet->setCellValue('D' . $row, $data->user->role === 'siswa' ? 
-                ($data->user->siswa->nis ?? '-') : 
-                ($data->user->karyawan->nip ?? '-'));
-            $sheet->setCellValue('E' . $row, $data->user->nama);
-            $sheet->setCellValue('F' . $row, Carbon::parse($data->jam_masuk)->format('H:i'));
-            $sheet->setCellValue('G' . $row, $data->status);
-            $sheet->setCellValue('H' . $row, $data->jam_keluar ? 
-                Carbon::parse($data->jam_keluar)->format('H:i') : '-');
+        foreach($this->dataAbsen as $index => $user) {
+            $sheet->setCellValue('A'.$row, $index + 1);
+            $sheet->setCellValue('B'.$row, ucfirst($user['role']));
+            $sheet->setCellValue('C'.$row, $user['identifier']);
+            $sheet->setCellValue('D'.$row, $user['nama']);
+
+            $column = 'E';
+            foreach($dates as $date) {
+                if(isset($user['attendance'][$date])) {
+                    $attendance = $user['attendance'][$date];
+                    $value = $attendance['status'] . "\n" .
+                            Carbon::parse($attendance['jam_masuk'])->format('H:i');
+                    if($attendance['jam_keluar']) {
+                        $value .= "\n" . Carbon::parse($attendance['jam_keluar'])->format('H:i');
+                    }
+                    $sheet->setCellValue($column.$row, $value);
+                } else {
+                    $sheet->setCellValue($column.$row, '-');
+                }
+                $column++;
+            }
             $row++;
         }
 
-        // Auto-size columns
-        foreach (range('A', 'H') as $column) {
-            $sheet->getColumnDimension($column)->setAutoSize(true);
+        // Styling
+        foreach(range('A', $column) as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        // Style the header
-        $sheet->getStyle('A1:H1')->applyFromArray([
-            'font' => [
-                'bold' => true,
-            ],
+        $sheet->getStyle('A1:' . $column . '1')->applyFromArray([
+            'font' => ['bold' => true],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => [
-                    'rgb' => 'E0E0E0',
-                ],
+                'startColor' => ['rgb' => 'E0E0E0'],
             ],
         ]);
 
-        // Output to browser
+        // Output
         $writer = new Xlsx($spreadsheet);
         $filename = 'absensi_gerbang_' . now()->format('Y-m-d') . '.xlsx';
 
-        return response()->streamDownload(function () use ($writer) {
+        return response()->streamDownload(function() use ($writer) {
             $writer->save('php://output');
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

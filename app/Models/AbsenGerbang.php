@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class AbsenGerbang extends Model
 {
@@ -11,14 +12,20 @@ class AbsenGerbang extends Model
 
     protected $fillable = [
         'user_id',
-        'foto',
         'jam_masuk',
         'jam_keluar',
         'tanggal',
+        'latitude',
+        'longitude', // Perbaiki dari 'longtitude' menjadi 'longitude'
         'status',
+        'foto',
     ];
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function getFotoUrlAttribute()
+    {
+        return $this->foto ? Storage::url($this->foto) : null;
     }
 }

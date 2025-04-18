@@ -50,6 +50,9 @@
                 <button wire:click="exportExcelManual" class="btn btn-success">
                     <i class="fas fa-file-excel me-2"></i>Export Excel
                 </button>
+                <button wire:click="exportPDF" class="btn btn-danger ms-2">
+                    <i class="fas fa-file-pdf me-2"></i>Export PDF
+                </button>
                 <button onclick="window.print()" class="btn btn-primary ms-2">
                     <i class="fas fa-print me-2"></i>Print
                 </button>
@@ -61,31 +64,73 @@
                     <thead>
                         <tr>
                             <th>No</th>
+                            <th>NIS</th>
                             <th>Nama Siswa</th>
                             <th>Kelas</th>
-                            <th>Jadwal</th>
-                            <th>Waktu Absen</th>
-                            <th>Status</th>
+                            @php
+                                $dates = collect($absen)->flatMap(function($student) {
+                                    return array_keys($student['attendance']->toArray());
+                                })->unique()->sort()->values()->toArray();
+                            @endphp
+                            @foreach($dates as $date)
+                                <th>{{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</th>
+                            @endforeach
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($absen as $i => $a)
+                        @forelse($absen as $index => $student)
                             <tr>
-                                <td>{{ $i + 1 }}</td>
-                                <td>{{ $a->siswa->nama ?? '-' }}</td>
-                                <td>{{ $a->kelas->nama_kelas ?? '-' }}</td>
-                                <td>{{ $a->jadwal->mapel->nama_mapel ?? '-' }}</td>
-                                <td>{{ $a->jam_absen }}</td>
-                                <td>{{ $a->status }}</td>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $student['nis'] }}</td>
+                                <td>{{ $student['nama'] }}</td>
+                                <td>{{ $student['kelas'] }}</td>
+                                @foreach($dates as $date)
+                                    <td class="text-center">
+                                        @if(isset($student['attendance'][$date]))
+                                            @foreach($student['attendance'][$date]['status'] as $attendance)
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <span class="badge bg-{{ $attendance['status'] === 'Hadir' ? 'success' : ($attendance['status'] === 'Izin' ? 'warning' : 'danger') }}">
+                                                        {{ $attendance['status'] }}
+                                                    </span>
+                                                    <small class="d-block">
+                                                        {{ $attendance['jam_absen'] }}
+                                                    </small>
+                                                    <small class="d-block text-muted">
+                                                        {{ $attendance['mapel'] }}
+                                                    </small>
+                                                </div>
+                                            @endforeach
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                @endforeach
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">Belum ada data absen.</td>
+                                <td colspan="{{ 4 + count($dates) }}" class="text-center">Tidak ada data absensi.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
+            <style>
+                .table td {
+                    vertical-align: middle;
+                    font-size: 0.9rem;
+                }
+                .badge {
+                    font-size: 0.8rem;
+                    padding: 0.3em 0.6em;
+                }
+                .badge small {
+                    font-size: 0.75em;
+                }
+                .text-muted {
+                    font-size: 0.8rem;
+                }
+            </style>
         </div>
     </div>
 </div>

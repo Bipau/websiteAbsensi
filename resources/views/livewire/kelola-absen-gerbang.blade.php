@@ -71,99 +71,104 @@
                 </div>
             </div>
 
-             <!-- Export Buttons -->
-             <div class="mb-3">
+            {{-- pilih export --}}
+            <div class="mb-3">
                 <button wire:click="exportExcelManual" class="btn btn-success">
                     <i class="fas fa-file-excel me-2"></i>Export Excel
+                </button>
+                <button wire:click="exportPDF" class="btn btn-danger ms-2">
+                    <i class="fas fa-file-pdf me-2"></i>Export PDF
                 </button>
                 <button onclick="window.print()" class="btn btn-primary ms-2">
                     <i class="fas fa-print me-2"></i>Print
                 </button>
             </div>
-            
             <!-- Table Section -->
             <div class="table-responsive">
-                <table class="table">
+                <table class="table table-bordered">
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Tanggal</th>
                             <th>Role</th>
                             <th>NIS/NIP</th>
                             <th>Nama</th>
-                            <th>Jam Masuk</th>
-                            <th>Status</th>
-                            <th>Jam Keluar</th>
-                            {{-- <th>Foto</th> --}}
+                            @php
+                                $dates = collect($dataAbsen)->flatMap(function($user) {
+                                    return array_keys($user['attendance']->toArray());
+                                })->unique()->sort()->values()->toArray();
+                            @endphp
+                            @foreach($dates as $date)
+                                <th class="text-center">{{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</th>
+                            @endforeach
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($dataAbsen as $index => $absen)
+                        @forelse($dataAbsen as $index => $user)
                             <tr>
-                                <td>{{ $dataAbsen->firstItem() + $index }}</td>
-                                <td>{{ \Carbon\Carbon::parse($absen->tanggal)->format('d/m/Y') }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>
-                                    <span class="badge bg-{{ $absen->user->role === 'siswa' ? 'info' : 'primary' }}">
-                                        {{ ucfirst($absen->user->role) }}
+                                    <span class="badge bg-{{ $user['role'] === 'siswa' ? 'info' : 'primary' }}">
+                                        {{ ucfirst($user['role']) }}
                                     </span>
                                 </td>
-                                <td>
-                                    @if ($absen->user->role === 'siswa')
-                                        {{ $absen->user->siswa->nis ?? '-' }}
-                                    @else
-                                        {{ $absen->user->karyawan->nip ?? '-' }}
-                                    @endif
-                                </td>
-                                <td>{{ $absen->user->nama }}</td>
-                                <td>{{ \Carbon\Carbon::parse($absen->jam_masuk)->format('H:i') }}</td>
-                                <td>
-                                    <span
-                                        class="badge bg-{{ $absen->status === 'Tepat Waktu' ? 'success' : 'warning' }}">
-                                        {{ $absen->status }}
-                                    </span>
-                                </td>
-                                <td>{{ $absen->jam_keluar ? \Carbon\Carbon::parse($absen->jam_keluar)->format('H:i') : '-' }}
-                                </td>
-                                {{-- <td>
-                                    @if($absen->foto)
-                                        <img src="{{ Storage::url($absen->foto) }}" 
-                                            alt="Foto Absen" 
-                                            class="rounded view-photo"
-                                            style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
-                                            data-foto="{{ Storage::url($absen->foto) }}"
-                                            data-nama="{{ $absen->user->nama }}"
-                                            data-tanggal="{{ Carbon\Carbon::parse($absen->tanggal)->format('d/m/Y') }}"
-                                            data-jam="{{ Carbon\Carbon::parse($absen->jam_masuk)->format('H:i') }}"
-                                            data-status="{{ $absen->status }}"
-                                        >
-                                    @else
-                                        <span class="text-muted">Tidak ada foto</span>
-                                    @endif
-                                </td> --}}
+                                <td>{{ $user['identifier'] }}</td>
+                                <td>{{ $user['nama'] }}</td>
+                                @foreach($dates as $date)
+                                    <td class="text-center">
+                                        @if(isset($user['attendance'][$date]))
+                                            <div class="d-flex flex-column align-items-center">
+                                                <span class="badge bg-{{ $user['attendance'][$date]['status'] === 'Tepat Waktu' ? 'success' : 'warning' }}">
+                                                    {{ $user['attendance'][$date]['status'] }}
+                                                </span>
+                                                <small class="d-block">
+                                                    {{ Carbon\Carbon::parse($user['attendance'][$date]['jam_masuk'])->format('H:i') }}
+                                                </small>
+                                                @if($user['attendance'][$date]['jam_keluar'])
+                                                    <small class="d-block text-muted">
+                                                        {{ Carbon\Carbon::parse($user['attendance'][$date]['jam_keluar'])->format('H:i') }}
+                                                    </small>
+                                                @endif
+                                             
+                                            </div>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                @endforeach
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center">Tidak ada data absensi.</td>
+                                <td colspan="{{ 4 + count($dates) }}" class="text-center">Tidak ada data absensi.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
-
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div>
-                        Menampilkan {{ $dataAbsen->firstItem() ?? 0 }} sampai {{ $dataAbsen->lastItem() ?? 0 }}
-                        dari {{ $dataAbsen->total() }} data
-                    </div>
-                    <div>
-                        {{ $dataAbsen->links() }}
-                    </div>
-                </div>
             </div>
+
+            <style>
+                .table td {
+                    vertical-align: middle;
+                    font-size: 0.9rem;
+                }
+                .badge {
+                    font-size: 0.8rem;
+                }
+                small {
+                    font-size: 0.75rem;
+                }
+                .img-thumbnail {
+                    transition: transform 0.2s;
+                }
+                .img-thumbnail:hover {
+                    transform: scale(1.1);
+                }
+            </style>
         </div>
     </div>
 
     <!-- Photo Modal -->
-    <div wire:ignore.self class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
+    <div wire:ignore.self class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -187,48 +192,48 @@
     </div>
 
     @push('scripts')
-    <script>
-        function showImage(url) {
-            Swal.fire({
-                imageUrl: url,
-                imageWidth: 600,
-                imageHeight: 400,
-                imageAlt: 'Foto Absensi',
-                showConfirmButton: false,
-                showCloseButton: true
-            });
-        }
+        <script>
+            function showImage(url) {
+                Swal.fire({
+                    imageUrl: url,
+                    imageWidth: 600,
+                    imageHeight: 400,
+                    imageAlt: 'Foto Absensi',
+                    showConfirmButton: false,
+                    showCloseButton: true
+                });
+            }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get the modal
-            const photoModal = new bootstrap.Modal(document.getElementById('photoModal'));
-            
-            // Add click event to all photos
-            document.querySelectorAll('.view-photo').forEach(photo => {
-                photo.addEventListener('click', function() {
-                    // Get data from data attributes
-                    const foto = this.dataset.foto;
-                    const nama = this.dataset.nama;
-                    const tanggal = this.dataset.tanggal;
-                    const jam = this.dataset.jam;
-                    const status = this.dataset.status;
-                    
-                    // Update modal content
-                    document.getElementById('modalImage').src = foto;
-                    document.getElementById('modalNama').textContent = nama;
-                    document.getElementById('modalTanggal').textContent = tanggal;
-                    document.getElementById('modalJam').textContent = jam;
-                    document.getElementById('modalStatus').textContent = status;
-                    
-                    // Show modal
-                    photoModal.show();
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get the modal
+                const photoModal = new bootstrap.Modal(document.getElementById('photoModal'));
+
+                // Add click event to all photos
+                document.querySelectorAll('.view-photo').forEach(photo => {
+                    photo.addEventListener('click', function() {
+                        // Get data from data attributes
+                        const foto = this.dataset.foto;
+                        const nama = this.dataset.nama;
+                        const tanggal = this.dataset.tanggal;
+                        const jam = this.dataset.jam;
+                        const status = this.dataset.status;
+
+                        // Update modal content
+                        document.getElementById('modalImage').src = foto;
+                        document.getElementById('modalNama').textContent = nama;
+                        document.getElementById('modalTanggal').textContent = tanggal;
+                        document.getElementById('modalJam').textContent = jam;
+                        document.getElementById('modalStatus').textContent = status;
+
+                        // Show modal
+                        photoModal.show();
+                    });
                 });
             });
-        });
 
-        // Add styles for photo hover effect
-        const style = document.createElement('style');
-        style.textContent = `
+            // Add styles for photo hover effect
+            const style = document.createElement('style');
+            style.textContent = `
             .view-photo {
                 transition: transform 0.2s ease;
             }
@@ -252,7 +257,7 @@
                 color: #666;
             }
         `;
-        document.head.appendChild(style);
-    </script>
+            document.head.appendChild(style);
+        </script>
     @endpush
 </div>
