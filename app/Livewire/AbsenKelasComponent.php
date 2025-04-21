@@ -122,6 +122,16 @@ class AbsenKelasComponent extends Component
 
     public function exportPDF()
     {
+
+        $walikelas = null;
+        if ($this->kelasId) {
+            $kelas = Kelas::with('walikelas.user')->find($this->kelasId);
+            $walikelas = $kelas->walikelas ? [
+                'nama' => $kelas->walikelas->user->nama ?? '-',
+                'nip' => $kelas->walikelas->nip ?? '-'
+            ] : null;
+        }
+
         $data = [
             'absen' => $this->absenData,
             'tanggal' => now()->format('d F Y'),
@@ -129,7 +139,8 @@ class AbsenKelasComponent extends Component
             'dates' => collect($this->absenData)->flatMap(function($student) {
                 return array_keys($student['attendance']->toArray());
             })->unique()->sort()->values()->toArray(),
-            'kelas' => $this->kelasId ? Kelas::find($this->kelasId)->nama_kelas : 'Semua Kelas'
+            'kelas' => $this->kelasId ? Kelas::find($this->kelasId)->nama_kelas : 'Semua Kelas',
+            'walikelas' => $walikelas
         ];
 
         $pdf = PDF::loadView('exports.absen-kelas-pdf', $data)->setPaper('a4', 'landscape');
@@ -171,7 +182,12 @@ class AbsenKelasComponent extends Component
             $column = 'E';
             foreach($dates as $date) {
                 if(isset($student['attendance'][$date])) {
-                    $statuses = $student['attendance'][$date]->pluck('status')->join(', ');
+                    // Fix: Convert array to collection and extract statuses
+                    $statuses = collect($student['attendance'][$date]['status'])
+                        ->map(function($item) {
+                            return $item['status'] . ' (' . $item['jam_absen'] . ' - ' . $item['mapel'] . ')';
+                        })
+                        ->join(', ');
                     $sheet->setCellValue($column.$row, $statuses);
                 } else {
                     $sheet->setCellValue($column.$row, '-');
@@ -180,6 +196,15 @@ class AbsenKelasComponent extends Component
             }
             $row++;
         }
+
+        // Styling
+        $sheet->getStyle('A1:' . $column . '1')->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'E0E0E0'],
+            ],
+        ]);
 
         // Auto-size columns
         foreach(range('A', $column) as $col) {

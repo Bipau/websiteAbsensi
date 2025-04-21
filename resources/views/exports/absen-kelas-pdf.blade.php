@@ -161,11 +161,10 @@
                 NIP. 19650412 199001 1 001
             </td>
             <td width="50%">
-                @if (request('kelas'))
-                    Wali Kelas<br><br><br><br>
-                    <u><strong>{{ $kelas->karyawan->nama ?? '-' }}</strong></u><br>
-                    NIP. {{ $kelas->karyawan->nip ?? '-' }}
-                @endif
+                Mengetahui,<br>
+                Wali Kelas {{ $kelas }}<br><br><br><br>
+                <u><strong>{{ $walikelas ? $walikelas['nama'] : '______________________' }}</strong></u><br>
+                NIP. {{ $walikelas ? $walikelas['nip'] : '______________________' }}
             </td>
         </tr>
     </table>
